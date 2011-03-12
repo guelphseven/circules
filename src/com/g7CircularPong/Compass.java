@@ -10,15 +10,24 @@ import java.lang.Math;
 public class Compass implements SensorEventListener{
 
 	Sensor compassSensor;
+	Sensor accelSensor;
 	SensorManager manager;
-	private float position;
+	float[] vecGravity;
+	float current, velocity=0;
+	private float orientation;
 	
 	public Compass(Context c)
 	{
 		manager = (SensorManager)c.getSystemService(Context.SENSOR_SERVICE);
 		compassSensor=manager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-		manager.registerListener(this, compassSensor, SensorManager.SENSOR_DELAY_UI);
-		position=0;
+		accelSensor=manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		manager.registerListener(this, compassSensor, SensorManager.SENSOR_DELAY_GAME);
+		manager.registerListener(this, accelSensor, SensorManager.SENSOR_DELAY_GAME);
+		vecGravity=new float[3];
+		vecGravity[0]=0;
+		vecGravity[1]=0;
+		vecGravity[2]=0;
+		orientation=0;
 	}
 
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
@@ -28,19 +37,39 @@ public class Compass implements SensorEventListener{
 
 	public void onSensorChanged(SensorEvent event) {
 		int eventType = event.sensor.getType();
-		if(eventType == Sensor.TYPE_MAGNETIC_FIELD)
+		if (eventType==Sensor.TYPE_ACCELEROMETER)
 		{
-			float[] values=event.values;
-			position=(float)(Math.tan(values[1]/values[0])*57.29577954);
-
+			vecGravity=event.values;
+			updatePosition();
 		}
-		// TODO Auto-generated method stub
 		
 	}
 	
+	private void updatePosition()
+	{
+			/*float target=(float)Math.atan2(vecGravity[1], -vecGravity[0]);
+			velocity*=0.98f;
+			if ((target-orientation)%(2*Math.PI)<(orientation-target)%(2*Math.PI))
+				velocity-=0.01;
+			else
+				velocity+=0.01;
+			
+			orientation+=velocity;*/
+			//orientation=(float)Math.atan2(vecGravity[1], -vecGravity[0]);
+			orientation=(float)Math.atan2(vecGravity[1], -vecGravity[0]);
+	}
+	
+/*	private double floatMod(double num, double divider)
+	{
+		double a = num / divider;
+		d=num-()
+		if ()
+	}
+	*/
 	public float getLatest()
 	{
-		return position;
+		updatePosition();
+		return orientation;
 	}
 
 }
